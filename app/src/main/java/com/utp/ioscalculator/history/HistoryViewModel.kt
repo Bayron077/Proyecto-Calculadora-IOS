@@ -1,4 +1,11 @@
 package com.utp.ioscalculator.history
 
-class HistoryViewModel {
+import androidx.lifecycle.ViewModel
+
+class HistoryViewModel : ViewModel() {
+    val operations = HistoryRepository.operationsList
+
+    fun clearHistory() {
+        HistoryRepository.operationsList.clear()
+    }
 }
