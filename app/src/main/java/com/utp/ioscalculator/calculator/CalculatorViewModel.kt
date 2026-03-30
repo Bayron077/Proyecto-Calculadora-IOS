@@ -83,7 +83,7 @@ class CalculatorViewModel: ViewModel() {
                     }
                 }
             }
-            else -> { // Digits
+            else -> {
                 if (isCalculated) {
                     contentResult.clear()
                     contentResult.add(valueButton)
@@ -107,30 +107,30 @@ class CalculatorViewModel: ViewModel() {
     }
 
     fun calculateResult() {
-        // 1. Validar que la lista no esté vacía
+
         if (contentResult.isEmpty()) return
 
-        // Si el usuario termina la operación con un operador (Ej. "5 + "), lo ignoramos
+
         val last = contentResult.last()
         if (isOperator(last) || last.endsWith(".")) {
             contentResult.removeAt(contentResult.size - 1)
         }
 
-        // 2. Crear una copia de la lista para ir resolviendo paso a paso
+
         var tempList = contentResult.toMutableList()
 
-        // 3. Primer recorrido: Resolver multiplicaciones, divisiones y módulo (x, ÷, %)
+
         var i = 0
         while (i < tempList.size) {
             val token = tempList[i]
             if (token == "x" || token == "÷" || token == "%") {
-                val num1 = tempList[i - 1] // El número de la izquierda
-                val num2 = tempList[i + 1] // El número de la derecha
+                val num1 = tempList[i - 1]
+                val num2 = tempList[i + 1]
 
                 val res = when (token) {
                     "x" -> multiply(num1, num2)
                     "÷" -> divide(num1, num2)
-                    "%" -> { // Operación módulo básica
+                    "%" -> {
                         val n1 = num1.toDoubleOrNull() ?: 0.0
                         val n2 = num2.toDoubleOrNull() ?: 0.0
                         (n1 % n2).toString()
@@ -138,26 +138,26 @@ class CalculatorViewModel: ViewModel() {
                     else -> "0"
                 }
 
-                // --- PREVENCIÓN DE ERROR: DIVISIÓN POR CERO ---
+
                 if (res == "Sin definir") {
                     contentResult.clear()
                     contentResult.add("Sin definir")
                     isCalculated = true
                     showContent()
-                    return // Detenemos el cálculo aquí mismo
+                    return
                 }
 
-                // Reemplazamos la operación por el resultado en la lista
+
                 tempList[i - 1] = res
-                tempList.removeAt(i) // Borramos el operador
-                tempList.removeAt(i) // Borramos el num2
-                // No sumamos a 'i' porque la lista se encogió y debemos seguir comprobando
+                tempList.removeAt(i)
+                tempList.removeAt(i)
+
             } else {
-                i++ // Si no es x, ÷, o %, pasamos al siguiente elemento
+                i++
             }
         }
 
-        // 4. Segundo recorrido: Resolver sumas y restas (+, -)
+
         i = 0
         while (i < tempList.size) {
             val token = tempList[i]
@@ -179,22 +179,17 @@ class CalculatorViewModel: ViewModel() {
             }
         }
 
-        // 5. El resultado final será el único elemento que queda en la lista
         var finalAnswer = tempList.first()
 
-        // Si es un número entero (ej. 8.0), le quitamos el ".0" para que se vea limpio
         if (finalAnswer.endsWith(".0")) {
             finalAnswer = finalAnswer.removeSuffix(".0")
         }
 
-        // --- CONEXIÓN CON EL HISTORIAL ---
-        // Aquí generas el formato exacto que pide el PDF: "5+3=8"
+
         val operacionHistorial = contentResult.joinToString("") + "=" + finalAnswer
 
-        // Guarda la operación en el repositorio compartido
         com.utp.ioscalculator.history.HistoryRepository.addOperation(operacionHistorial)
 
-        // 6. Actualizar la lista original y la pantalla
         contentResult.clear()
         contentResult.add(finalAnswer)
         isCalculated = true
@@ -225,7 +220,7 @@ class CalculatorViewModel: ViewModel() {
         return if (n2 != 0.0) {
             model.divide(n1, n2).toString()
         } else {
-            "Sin definir"
+            "Error"
         }
     }
 }
